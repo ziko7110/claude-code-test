@@ -6,20 +6,30 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  issues: write
+  actions: read
+
 jobs:
   claude-code:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-      pull-requests: write
-      issues: write
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+    
+    - name: Generate GitHub App token
+      id: app-token
+      uses: actions/create-github-app-token@v2
+      with:
+        app-id: ${{ secrets.CLAUDE_APP_ID }}
+        private-key: ${{ secrets.CLAUDE_APP_PRIVATE_KEY }}
+    
     - uses: anthropics/claude-code-action@v0.0.16
       with:
         anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ steps.app-token.outputs.token }}
   test:
     runs-on: ubuntu-latest
     
