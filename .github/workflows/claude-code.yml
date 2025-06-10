@@ -9,6 +9,11 @@ on:
 jobs:
   claude-code:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
     - uses: actions/checkout@v3
     - uses: anthropics/claude-code-action@v0.0.16
