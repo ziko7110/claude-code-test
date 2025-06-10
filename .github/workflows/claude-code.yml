@@ -16,8 +16,6 @@ jobs:
         anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
         github-app-id: ${{ secrets.CLAUDE_APP_ID }}
         github-app-private-key: ${{ secrets.CLAUDE_APP_PRIVATE_KEY }}
-
-jobs:
   test:
     runs-on: ubuntu-latest
     
