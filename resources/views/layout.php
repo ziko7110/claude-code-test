@@ -24,7 +24,7 @@
         }
         
         .header {
-            background-color: #007bff;
+            background-color: #dc3545;
             color: white;
             padding: 20px 0;
             margin-bottom: 30px;
@@ -37,7 +37,7 @@
         .btn {
             display: inline-block;
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: #dc3545;
             color: white;
             text-decoration: none;
             border-radius: 5px;
@@ -47,7 +47,7 @@
         }
         
         .btn:hover {
-            background-color: #0056b3;
+            background-color: #c82333;
         }
         
         .btn-danger {
