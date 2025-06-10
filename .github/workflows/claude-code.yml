@@ -144,7 +144,10 @@ jobs:
         echo "Running code quality checks..."
         
         # Check file permissions
-        find . -name "*.php" -perm 777 && echo "WARNING: Files with 777 permissions found" && exit 1
+        if find . -name "*.php" -perm 777 | grep -q .; then
+          echo "WARNING: Files with 777 permissions found"
+          exit 1
+        fi
         
         # Check for TODO/FIXME comments
         if grep -r "TODO\|FIXME" . --include="*.php"; then
