@@ -1,0 +1,186 @@
+name: Claude Code Action
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  claude-code:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: anthropics/claude-code-action@v1
+      with:
+        anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+        github-app-id: ${{ secrets.CLAUDE_APP_ID }}
+        github-app-private-key: ${{ secrets.CLAUDE_APP_PRIVATE_KEY }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+        extensions: mbstring, session, json
+        ini-values: post_max_size=256M, upload_max_filesize=256M
+        coverage: none
+    
+    - name: Validate PHP Syntax
+      run: |
+        find . -name "*.php" -exec php -l {} \;
+    
+    - name: Start PHP Development Server
+      run: |
+        php -S localhost:8000 -t public &
+        sleep 5
+    
+    - name: Test Application Routes
+      run: |
+        # Test main page
+        curl -f http://localhost:8000/ || exit 1
+        echo "✓ Main page accessible"
+        
+        # Test create page
+        curl -f http://localhost:8000/todos/create || exit 1
+        echo "✓ Create page accessible"
+    
+    - name: Run Basic Tests
+      run: |
+        echo "Running basic application tests..."
+        php -r "
+        require_once 'helpers.php';
+        require_once 'SimpleTodoController.php';
+        
+        // Test controller instantiation
+        \$controller = new SimpleTodoController();
+        echo 'Controller instantiated successfully' . PHP_EOL;
+        
+        // Test helper functions
+        \$testArray = ['a' => 1, 'b' => 2];
+        \$collection = collect(\$testArray);
+        echo 'Collection helper works' . PHP_EOL;
+        
+        echo 'All basic tests passed!' . PHP_EOL;
+        "
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+    
+    - name: Create deployment package
+      run: |
+        mkdir -p deploy
+        cp -r public helpers.php SimpleTodoController.php simple_routes.php resources deploy/
+        cp README.md deploy/
+        echo "Deployment package created"
+    
+    - name: Archive deployment artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: todo-app-deployment
+        path: deploy/
+        retention-days: 30
+
+  security-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Security Audit
+      run: |
+        echo "Running security checks..."
+        
+        # Check for common security issues in PHP files
+        echo "Checking for potential security issues..."
+        
+        # Check for eval usage
+        if grep -r "eval(" . --include="*.php"; then
+          echo "WARNING: eval() found in code"
+          exit 1
+        fi
+        
+        # Check for file_get_contents with user input
+        if grep -r "file_get_contents(\$_" . --include="*.php"; then
+          echo "WARNING: Potential file inclusion vulnerability"
+          exit 1
+        fi
+        
+        # Check for SQL injection patterns (though we don't use DB)
+        if grep -r "\$_.*\." . --include="*.php" | grep -E "(SELECT|INSERT|UPDATE|DELETE)"; then
+          echo "WARNING: Potential SQL injection pattern"
+          exit 1
+        fi
+        
+        echo "✓ Basic security checks passed"
+
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+    
+    - name: Code Quality Checks
+      run: |
+        echo "Running code quality checks..."
+        
+        # Check file permissions
+        find . -name "*.php" -perm 777 && echo "WARNING: Files with 777 permissions found" && exit 1
+        
+        # Check for TODO/FIXME comments
+        if grep -r "TODO\|FIXME" . --include="*.php"; then
+          echo "INFO: TODO/FIXME comments found (review recommended)"
+        fi
+        
+        # Check for debugging functions
+        if grep -r "var_dump\|print_r\|var_export" . --include="*.php"; then
+          echo "WARNING: Debug functions found in code"
+          exit 1
+        fi
+        
+        echo "✓ Code quality checks passed"
+
+  documentation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Validate Documentation
+      run: |
+        echo "Validating documentation..."
+        
+        # Check if README exists and has content
+        if [ ! -s README.md ]; then
+          echo "ERROR: README.md is missing or empty"
+          exit 1
+        fi
+        
+        # Check if CLAUDE.md exists
+        if [ ! -s CLAUDE.md ]; then
+          echo "ERROR: CLAUDE.md is missing or empty"
+          exit 1
+        fi
+        
+        echo "✓ Documentation validation passed"
