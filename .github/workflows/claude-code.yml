@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - uses: anthropics/claude-code-action@v1
+    - uses: anthropics/claude-code-action@v0.0.16
       with:
         anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
         github-app-id: ${{ secrets.CLAUDE_APP_ID }}
