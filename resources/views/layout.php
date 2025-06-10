@@ -34,6 +34,31 @@
             text-align: center;
         }
         
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-title {
+            margin: 0;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: 2px solid white;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
         .btn {
             display: inline-block;
             padding: 10px 20px;
@@ -158,12 +183,72 @@
             color: red;
             margin-top: 5px;
         }
+        
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .header {
+            background-color: #2d3748;
+        }
+        
+        body.dark-mode .card {
+            background-color: #2d3748;
+            color: #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        body.dark-mode .todo-item {
+            background-color: #374151;
+            border-color: #4a5568;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .todo-item.completed {
+            background-color: #2d3748;
+        }
+        
+        body.dark-mode .todo-description {
+            color: #a0a0a0;
+        }
+        
+        body.dark-mode .form-control {
+            background-color: #374151;
+            border-color: #4a5568;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .form-control:focus {
+            background-color: #4a5568;
+            border-color: #007bff;
+            outline: none;
+        }
+        
+        body.dark-mode .alert-success {
+            background-color: #1f2937;
+            color: #10b981;
+            border-color: #10b981;
+        }
+        
+        body.dark-mode .alert-error {
+            background-color: #1f2937;
+            color: #ef4444;
+            border-color: #ef4444;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <div class="container">
-            <h1>Todo アプリ</h1>
+            <div class="header-content">
+                <h1 class="header-title">Todo アプリ</h1>
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <span id="theme-icon">🌙</span>
+                    <span id="theme-text">ダーク</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -182,5 +267,43 @@
 
         <?php echo $content; ?>
     </div>
+
+    <script>
+        // Theme toggle functionality
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'ダーク';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.add('dark-mode');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'ライト';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-mode');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'ライト';
+            } else {
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'ダーク';
+            }
+        });
+    </script>
 </body>
 </html>
